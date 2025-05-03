@@ -39,7 +39,7 @@ public class Robot extends LoggedRobot {
   public Robot() {
 
     //To run the sim at 30fps
-    super(1);
+    super(1.0/15);
 
     Logger.recordMetadata("Bad-Apple-Ascope", "WIP");
 
@@ -90,6 +90,7 @@ public class Robot extends LoggedRobot {
           arr.clear();
 
           System.out.println("Done processing frame " + cur);
+          cur++;
         } else {
 
           String[] parts = line.split(",");
@@ -99,8 +100,6 @@ public class Robot extends LoggedRobot {
           Pose3d pose = new Pose3d(new Translation3d(x, y, VIDEO_HEIGHT), new Rotation3d());
           arr.add(pose);
           //System.out.println(pose);
-          
-          cur++;
 
         }
       }

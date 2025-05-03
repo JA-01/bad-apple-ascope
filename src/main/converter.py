@@ -1,7 +1,7 @@
 import cv2
 import json
 
-video_path = "C:\\Users\\Jasee\\Stuff\\bad-apple-ascope\\src\\bad_64x64_full.mkv"
+video_path = "C:\\Users\\Jasee\\Stuff\\bad-apple-ascope\\src\\bad_32x32_15fps_full.mp4"
 output_path = "framedata.txt"
 
 cap = cv2.VideoCapture(video_path)
@@ -21,7 +21,7 @@ with open(output_path, "w") as f:
                 pixel = frame[y, x]
                 brightness = 0.299 * pixel[2] + 0.587 * pixel[1] + 0.114 * pixel[0]
                 if brightness < 127.5:
-                    f.write(f"{x},{y}\n")
+                    f.write(f"{width-x},{y}\n")
 
         f.write("BREAK\n")  # blank line to separate frames
         print(f"Processed frame {frame_number}")
