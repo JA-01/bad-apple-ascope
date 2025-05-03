@@ -4,12 +4,19 @@
 
 package frc.robot;
 
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.util.sendable.SendableRegistry;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.motorcontrol.PWMSparkMax;
+
+import java.io.File;
 
 import org.littletonrobotics.junction.LogFileUtil;
 import org.littletonrobotics.junction.LoggedRobot;
@@ -18,18 +25,21 @@ import org.littletonrobotics.junction.networktables.NT4Publisher;
 import org.littletonrobotics.junction.wpilog.WPILOGReader;
 import org.littletonrobotics.junction.wpilog.WPILOGWriter;
 
+import java.io.*;
+import java.util.*;
 
 public class Robot extends LoggedRobot {
-  
-  private final PWMSparkMax m_leftDrive = new PWMSparkMax(0);
-  private final PWMSparkMax m_rightDrive = new PWMSparkMax(1);
-  private final DifferentialDrive m_robotDrive =
-      new DifferentialDrive(m_leftDrive::set, m_rightDrive::set);
-  private final XboxController m_controller = new XboxController(0);
-  private final Timer m_timer = new Timer();
+  public final String FRAME_DATA_PATH = "C:\\Users\\Jasee\\Stuff\\bad-apple-ascope\\framedata.txt";
+  public final double VIDEO_HEIGHT = 3.5;
+  int curFrame = 0;
+  ArrayList<ArrayList<Pose3d>> videoData;
+  Timer t = new Timer();
 
   /** Called once at the beginning of the robot program. */
   public Robot() {
+
+    //To run the sim at 30fps
+    super(1.0);
 
     Logger.recordMetadata("Bad-Apple-Ascope", "WIP");
 
@@ -46,42 +56,81 @@ public class Robot extends LoggedRobot {
     }
   
     Logger.start();
-
-    SendableRegistry.addChild(m_robotDrive, m_leftDrive);
-    SendableRegistry.addChild(m_robotDrive, m_rightDrive);
-    m_rightDrive.setInverted(true);
   }
 
   /** This function is run once each time the robot enters autonomous mode. */
   @Override
   public void autonomousInit() {
-    m_timer.restart();
+    
   }
 
   /** This function is called periodically during autonomous. */
   @Override
   public void autonomousPeriodic() {
     
-    System.out.println("Auto periodic");
-    Logger.recordOutput("test/test", "Hello");
-
-    // Drive for 2 seconds
-    if (m_timer.get() < 2.0) {
-      // Drive forwards half speed, make sure to turn input squaring off
-      m_robotDrive.arcadeDrive(0.5, 0.0, false);
-    } else {
-      m_robotDrive.stopMotor(); // stop robot
-    }
   }
 
   /** This function is called once each time the robot enters teleoperated mode. */
   @Override
-  public void teleopInit() {}
+  public void teleopInit() {
+
+
+    videoData = new ArrayList<>();
+
+    try {
+      Scanner s = new Scanner(new File(FRAME_DATA_PATH));
+      int cur = 0;
+      ArrayList<Pose3d> arr = new ArrayList<>();
+
+      while(s.hasNextLine()) {
+        String line = s.nextLine().trim();
+
+        if(line.isEmpty()) {
+          videoData.add(new ArrayList<>(arr));
+          arr.clear();
+          line = s.nextLine().trim();
+        }
+
+        String[] parts = line.split(",");
+        double x = Double.parseDouble(parts[0]);
+        double y = Double.parseDouble(parts[1]);
+
+        Pose3d pose = new Pose3d(new Translation3d(x, y, VIDEO_HEIGHT), new Rotation3d());
+        arr.add(pose);
+        //System.out.println(pose);
+        
+        cur++;
+      }
+
+    } catch (Exception e) {
+      System.out.println("An error occurred");
+      e.printStackTrace();
+    }
+
+    System.out.println("Init done");
+    for(int i = 0; i < videoData.size(); i++) {
+      //System.out.println(videoData.get(i));
+    }
+    t.start();
+
+  }
 
   /** This function is called periodically during teleoperated mode. */
   @Override
   public void teleopPeriodic() {
-    m_robotDrive.arcadeDrive(-m_controller.getLeftY(), -m_controller.getRightX());
+    if (curFrame < videoData.size() && t.get() > 5.0) {
+
+      System.out.println("Frame #" + curFrame);
+      ArrayList<Pose3d> frameData = videoData.get(curFrame);
+
+      Pose3d[] arr = new Pose3d[frameData.size()];
+      frameData.toArray(arr);
+
+      Logger.recordOutput("test", arr);
+      curFrame++;
+    } else {
+      System.out.println(t.get());
+    }
   }
 
   /** This function is called once each time the robot enters test mode. */
