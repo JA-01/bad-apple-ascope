@@ -39,7 +39,7 @@ public class Robot extends LoggedRobot {
   public Robot() {
 
     //To run the sim at 30fps
-    super(1.0);
+    super(1);
 
     Logger.recordMetadata("Bad-Apple-Ascope", "WIP");
 
@@ -73,7 +73,7 @@ public class Robot extends LoggedRobot {
   /** This function is called once each time the robot enters teleoperated mode. */
   @Override
   public void teleopInit() {
-
+    curFrame = 0;
 
     videoData = new ArrayList<>();
 
@@ -85,21 +85,24 @@ public class Robot extends LoggedRobot {
       while(s.hasNextLine()) {
         String line = s.nextLine().trim();
 
-        if(line.isEmpty()) {
+        if(line.contains("BREAK")) {
           videoData.add(new ArrayList<>(arr));
           arr.clear();
-          line = s.nextLine().trim();
+
+          System.out.println("Done processing frame " + cur);
+        } else {
+
+          String[] parts = line.split(",");
+          double x = Double.parseDouble(parts[0]);
+          double y = Double.parseDouble(parts[1]);
+  
+          Pose3d pose = new Pose3d(new Translation3d(x, y, VIDEO_HEIGHT), new Rotation3d());
+          arr.add(pose);
+          //System.out.println(pose);
+          
+          cur++;
+
         }
-
-        String[] parts = line.split(",");
-        double x = Double.parseDouble(parts[0]);
-        double y = Double.parseDouble(parts[1]);
-
-        Pose3d pose = new Pose3d(new Translation3d(x, y, VIDEO_HEIGHT), new Rotation3d());
-        arr.add(pose);
-        //System.out.println(pose);
-        
-        cur++;
       }
 
     } catch (Exception e) {
@@ -118,7 +121,7 @@ public class Robot extends LoggedRobot {
   /** This function is called periodically during teleoperated mode. */
   @Override
   public void teleopPeriodic() {
-    if (curFrame < videoData.size() && t.get() > 5.0) {
+    if (curFrame < videoData.size()) {
 
       System.out.println("Frame #" + curFrame);
       ArrayList<Pose3d> frameData = videoData.get(curFrame);
@@ -129,7 +132,7 @@ public class Robot extends LoggedRobot {
       Logger.recordOutput("test", arr);
       curFrame++;
     } else {
-      System.out.println(t.get());
+      //System.out.println(t.get());
     }
   }
 
