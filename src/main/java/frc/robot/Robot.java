@@ -29,17 +29,17 @@ import java.io.*;
 import java.util.*;
 
 public class Robot extends LoggedRobot {
-  public final String FRAME_DATA_PATH = "C:\\Users\\Jasee\\Stuff\\bad-apple-ascope\\framedata.txt";
+  public final String FRAME_DATA_PATH = "C:\\Users\\Jasee\\Stuff\\bad-apple-ascope\\src\\framedata\\64x64_15fps.txt";
   public final double VIDEO_HEIGHT = 3.5;
   int curFrame = 0;
-  ArrayList<ArrayList<Pose3d>> videoData;
+  ArrayList<ArrayList<Pose2d>> videoData;
   Timer t = new Timer();
 
   /** Called once at the beginning of the robot program. */
   public Robot() {
 
-    //To run the sim at 30fps
-    super(1.0/15);
+    //To run the sim at a certain fps
+    super(1.0/15.0);
 
     Logger.recordMetadata("Bad-Apple-Ascope", "WIP");
 
@@ -47,6 +47,7 @@ public class Robot extends LoggedRobot {
       Logger.addDataReceiver(new WPILOGWriter()); // Log to a USB stick ("/U/logs")
       Logger.addDataReceiver(new NT4Publisher()); // Publish data to NetworkTables
     } else if (isSimulation()) {
+      Logger.addDataReceiver(new WPILOGWriter("C:\\Users\\Jasee\\Stuff\\ascope logs"));
       Logger.addDataReceiver(new NT4Publisher());
     } else {
       setUseTiming(false); // Run as fast as possible
@@ -80,7 +81,7 @@ public class Robot extends LoggedRobot {
     try {
       Scanner s = new Scanner(new File(FRAME_DATA_PATH));
       int cur = 0;
-      ArrayList<Pose3d> arr = new ArrayList<>();
+      ArrayList<Pose2d> arr = new ArrayList<>();
 
       while(s.hasNextLine()) {
         String line = s.nextLine().trim();
@@ -97,7 +98,7 @@ public class Robot extends LoggedRobot {
           double x = Double.parseDouble(parts[0]);
           double y = Double.parseDouble(parts[1]);
   
-          Pose3d pose = new Pose3d(new Translation3d(x, y, VIDEO_HEIGHT), new Rotation3d());
+          Pose2d pose = new Pose2d(x, y + 10, new Rotation2d());
           arr.add(pose);
           //System.out.println(pose);
 
@@ -123,12 +124,12 @@ public class Robot extends LoggedRobot {
     if (curFrame < videoData.size()) {
 
       System.out.println("Frame #" + curFrame);
-      ArrayList<Pose3d> frameData = videoData.get(curFrame);
+      ArrayList<Pose2d> frameData = videoData.get(curFrame);
 
-      Pose3d[] arr = new Pose3d[frameData.size()];
+      Pose2d[] arr = new Pose2d[frameData.size()];
       frameData.toArray(arr);
 
-      Logger.recordOutput("test", arr);
+      Logger.recordOutput("Frame Data", arr);
       curFrame++;
     } else {
       //System.out.println(t.get());

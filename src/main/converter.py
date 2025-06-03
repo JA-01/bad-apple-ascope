@@ -1,8 +1,10 @@
 import cv2
 import json
 
-video_path = "C:\\Users\\Jasee\\Stuff\\bad-apple-ascope\\src\\bad_32x32_15fps_full.mp4"
-output_path = "framedata.txt"
+video_path = "C:\\Users\\Jasee\\Stuff\\bad-apple-ascope\\src\\Videos\\bad_64x64_15fps_full.mp4"
+print(video_path)
+output_path = "C:\\Users\\Jasee\\Stuff\\bad-apple-ascope\\src\\framedata\\framedata.txt"
+print(output_path)
 
 cap = cv2.VideoCapture(video_path)
 frame_number = 0
